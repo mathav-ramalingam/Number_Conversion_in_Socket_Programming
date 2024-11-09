@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Converter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <style>
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            particlesJS("particles-js", {
+                particles: {
+                    number: { value: 80, density: { enable: true, value_area: 800 } },
+                    color: { value: "#ffffff" },
+                    shape: {
+                        type: "circle",
+                        stroke: { width: 0, color: "#000000" },
+                        polygon: { nb_sides: 5 },
+                        image: { src: "img/github.svg", width: 100, height: 100 }
+                    },
+                    opacity: { value: 0.5, random: false },
+                    size: { value: 10, random: true },
+                    line_linked: { enable: true, distance: 150, color: "#ffffff", opacity: 0.4, width: 1 },
+                    move: {
+                        enable: true,
+                        speed: 6,
+                        direction: "none",
+                        random: false,
+                        straight: false,
+                        out_mode: "out",
+                        bounce: false,
+                    }
+                },
+                interactivity: {
+                    detect_on: "canvas",
+                    events: {
+                        onhover: { enable: true, mode: "repulse" },
+                        onclick: { enable: true, mode: "push" },
+                        resize: true
+                    },
+                },
+                retina_detect: true
+            });
+        });
+
+        async function convertNumber() {
+            const number = document.getElementById('number').value;
+            const inputBase = document.getElementById('inputBase').value;
+            const outputBase = document.getElementById('outputBase').value; // Use this for conversion
+            const protocol = document.querySelector('input[name="protocol"]:checked').value;
+
+            const response = await fetch('http://192.168.1.5:3000/convert', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ number, inputBase, outputBase, protocol }),
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                document.getElementById('result').innerText = `Error: ${errorText}`;
+                return;
+            }
+
+            const result = await response.json();
+            document.getElementById('result').innerText = `Converted value: ${result.converted}`;
+        }
+    </script>
+</head>
+
+<body class="flex items-center justify-center h-screen bg-black relative overflow-hidden">
+    <div id="particles-js"></div>
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96 z-10">
+        <h1 class="text-2xl font-bold mb-4 text-center">Number Converter</h1>
+
+        <input type="text" id="number" placeholder="Enter number" required
+            class="border border-gray-300 p-2 w-full mb-4 rounded">
+
+        <select id="inputBase" class="border border-gray-300 p-2 w-full mb-4 rounded">
+            <option value="BIN">Binary</option>
+            <option value="OCT">Octal</option>
+            <option value="DEC">Decimal</option>
+            <option value="HEX">Hexadecimal</option>
+        </select>
+
+        <select id="outputBase" class="border border-gray-300 p-2 w-full mb-4 rounded"> <!-- Added Output Base -->
+            <option value="BIN">Binary</option>
+            <option value="OCT">Octal</option>
+            <option value="DEC">Decimal</option>
+            <option value="HEX">Hexadecimal</option>
+        </select>
+
+        <div class="flex justify-between mb-4">
+            <label class="flex items-center">
+                <input type="radio" name="protocol" value="TCP" checked class="mr-2"> TCP
+            </label>
+            <label class="flex items-center">
+                <input type="radio" name="protocol" value="UDP" class="mr-2"> UDP
+            </label>
+        </div>
+
+        <button onclick="convertNumber()" class="bg-blue-600 text-white p-2 rounded w-full">Convert</button>
+
+        <p id="result" class="mt-4 text-center text-gray-700"></p>
+    </div>
+</body>
+
+</html>
